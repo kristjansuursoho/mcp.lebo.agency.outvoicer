@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "apis": [
+    {
+      "identifier": "tetris",
+      "source": "./src/static/openapi.json",
+      "integrity": "sha512-0Vt1QDy7XrKvwSt4UWfti/BbCc72yz5TuHXd7xAyuviQ7U9mB2c1CWMqlSOfm3pBJ/bLKQD2Awdz86V+MyDgIA==",
+      "installerVersion": "6.1.3"
+    }
+  ]
+}
