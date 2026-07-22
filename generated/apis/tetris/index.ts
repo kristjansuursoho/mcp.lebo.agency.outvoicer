@@ -4,7 +4,7 @@ import Oas from "oas"
 import APICore from "api/dist/core"
 import definition from "./openapi.json"
 
-class SDK {
+export class TetrisSDK {
   spec: Oas
   core: APICore
 
@@ -130,9 +130,7 @@ class SDK {
    * referenced client/product does not exist)
    * @throws FetchError<401, types.CreateClientResponse401> Missing or invalid Bearer token, or the token has no access to this subdomain
    */
-  createClient(
-    body: types.CreateClientBodyParam
-  ): Promise<FetchResponse<200, types.CreateClientResponse200>> {
+  createClient(body: types.CreateClientBodyParam): Promise<FetchResponse<200, types.CreateClientResponse200>> {
     return this.core.fetch("/api/client", "post", body)
   }
 
@@ -175,9 +173,7 @@ class SDK {
    * @throws FetchError<401, types.GetClientResponse401> Missing or invalid Bearer token, or the token has no access to this subdomain
    * @throws FetchError<404, types.GetClientResponse404> Resource not found
    */
-  getClient(
-    metadata: types.GetClientMetadataParam
-  ): Promise<FetchResponse<200, types.GetClientResponse200>> {
+  getClient(metadata: types.GetClientMetadataParam): Promise<FetchResponse<200, types.GetClientResponse200>> {
     return this.core.fetch("/api/client/{clientId}", "get", metadata)
   }
 
@@ -289,9 +285,7 @@ class SDK {
    * @throws FetchError<401, types.ImportClientsFromIntegrationResponse401> Missing or invalid Bearer token, or the token has no access to this subdomain
    * @throws FetchError<501, types.ImportClientsFromIntegrationResponse501> The connected accounting software does not support this integration endpoint
    */
-  importClientsFromIntegration(): Promise<
-    FetchResponse<200, types.ImportClientsFromIntegrationResponse200>
-  > {
+  importClientsFromIntegration(): Promise<FetchResponse<200, types.ImportClientsFromIntegrationResponse200>> {
     return this.core.fetch("/api/client/import/integration", "get")
   }
 
@@ -301,9 +295,7 @@ class SDK {
    * @throws FetchError<401, types.ViewClientsInIntegrationResponse401> Missing or invalid Bearer token, or the token has no access to this subdomain
    * @throws FetchError<501, types.ViewClientsInIntegrationResponse501> The connected accounting software does not support this integration endpoint
    */
-  viewClientsInIntegration(): Promise<
-    FetchResponse<200, types.ViewClientsInIntegrationResponse200>
-  > {
+  viewClientsInIntegration(): Promise<FetchResponse<200, types.ViewClientsInIntegrationResponse200>> {
     return this.core.fetch("/api/client/view/integration", "get")
   }
 
@@ -359,9 +351,7 @@ class SDK {
    * referenced client/product does not exist)
    * @throws FetchError<401, types.CreateProductResponse401> Missing or invalid Bearer token, or the token has no access to this subdomain
    */
-  createProduct(
-    body: types.CreateProductBodyParam
-  ): Promise<FetchResponse<200, types.CreateProductResponse200>> {
+  createProduct(body: types.CreateProductBodyParam): Promise<FetchResponse<200, types.CreateProductResponse200>> {
     return this.core.fetch("/api/product", "post", body)
   }
 
@@ -371,9 +361,7 @@ class SDK {
    * @throws FetchError<401, types.GetProductResponse401> Missing or invalid Bearer token, or the token has no access to this subdomain
    * @throws FetchError<404, types.GetProductResponse404> Resource not found
    */
-  getProduct(
-    metadata: types.GetProductMetadataParam
-  ): Promise<FetchResponse<200, types.GetProductResponse200>> {
+  getProduct(metadata: types.GetProductMetadataParam): Promise<FetchResponse<200, types.GetProductResponse200>> {
     return this.core.fetch("/api/product/{productId}", "get", metadata)
   }
 
@@ -400,9 +388,7 @@ class SDK {
    * @throws FetchError<401, types.DeleteProductResponse401> Missing or invalid Bearer token, or the token has no access to this subdomain
    * @throws FetchError<404, types.DeleteProductResponse404> Resource not found
    */
-  deleteProduct(
-    metadata: types.DeleteProductMetadataParam
-  ): Promise<FetchResponse<number, unknown>> {
+  deleteProduct(metadata: types.DeleteProductMetadataParam): Promise<FetchResponse<number, unknown>> {
     return this.core.fetch("/api/product/{productId}", "delete", metadata)
   }
 
@@ -426,9 +412,7 @@ class SDK {
    * @throws FetchError<401, types.ImportProductsFromIntegrationResponse401> Missing or invalid Bearer token, or the token has no access to this subdomain
    * @throws FetchError<501, types.ImportProductsFromIntegrationResponse501> The connected accounting software does not support this integration endpoint
    */
-  importProductsFromIntegration(): Promise<
-    FetchResponse<200, types.ImportProductsFromIntegrationResponse200>
-  > {
+  importProductsFromIntegration(): Promise<FetchResponse<200, types.ImportProductsFromIntegrationResponse200>> {
     return this.core.fetch("/api/product/import/integration", "get")
   }
 
@@ -448,9 +432,7 @@ class SDK {
    * referenced client/product does not exist)
    * @throws FetchError<401, types.CreateCompanyResponse401> Missing or invalid Bearer token, or the token has no access to this subdomain
    */
-  createCompany(
-    body: types.CreateCompanyBodyParam
-  ): Promise<FetchResponse<200, types.CreateCompanyResponse200>> {
+  createCompany(body: types.CreateCompanyBodyParam): Promise<FetchResponse<200, types.CreateCompanyResponse200>> {
     return this.core.fetch("/api/company", "post", body)
   }
 
@@ -464,9 +446,7 @@ class SDK {
    * referenced client/product does not exist)
    * @throws FetchError<401, types.UpdateCompanyResponse401> Missing or invalid Bearer token, or the token has no access to this subdomain
    */
-  updateCompany(
-    body: types.UpdateCompanyBodyParam
-  ): Promise<FetchResponse<200, types.UpdateCompanyResponse200>> {
+  updateCompany(body: types.UpdateCompanyBodyParam): Promise<FetchResponse<200, types.UpdateCompanyResponse200>> {
     return this.core.fetch("/api/company", "put", body)
   }
 
@@ -489,9 +469,7 @@ class SDK {
    * referenced client/product does not exist)
    * @throws FetchError<401, types.CreateInvoiceResponse401> Missing or invalid Bearer token, or the token has no access to this subdomain
    */
-  createInvoice(
-    body: types.CreateInvoiceBodyParam
-  ): Promise<FetchResponse<200, types.CreateInvoiceResponse200>> {
+  createInvoice(body: types.CreateInvoiceBodyParam): Promise<FetchResponse<200, types.CreateInvoiceResponse200>> {
     return this.core.fetch("/api/sell", "post", body)
   }
 
@@ -552,9 +530,7 @@ class SDK {
    * @throws FetchError<401, types.GetInvoiceResponse401> Missing or invalid Bearer token, or the token has no access to this subdomain
    * @throws FetchError<404, types.GetInvoiceResponse404> Resource not found
    */
-  getInvoice(
-    metadata: types.GetInvoiceMetadataParam
-  ): Promise<FetchResponse<200, types.GetInvoiceResponse200>> {
+  getInvoice(metadata: types.GetInvoiceMetadataParam): Promise<FetchResponse<200, types.GetInvoiceResponse200>> {
     return this.core.fetch("/api/sell/{id}", "get", metadata)
   }
 
@@ -683,9 +659,7 @@ class SDK {
    * @throws FetchError<401, types.ViewProductsInIntegrationResponse401> Missing or invalid Bearer token, or the token has no access to this subdomain
    * @throws FetchError<501, types.ViewProductsInIntegrationResponse501> The connected accounting software does not support this integration endpoint
    */
-  viewProductsInIntegration(): Promise<
-    FetchResponse<200, types.ViewProductsInIntegrationResponse200>
-  > {
+  viewProductsInIntegration(): Promise<FetchResponse<200, types.ViewProductsInIntegrationResponse200>> {
     return this.core.fetch("/api/product/view/integration", "get")
   }
 
@@ -722,9 +696,7 @@ class SDK {
    * @throws FetchError<401, types.ViewInvoicesInIntegrationResponse401> Missing or invalid Bearer token, or the token has no access to this subdomain
    * @throws FetchError<501, types.ViewInvoicesInIntegrationResponse501> The connected accounting software does not support this integration endpoint
    */
-  viewInvoicesInIntegration(): Promise<
-    FetchResponse<200, types.ViewInvoicesInIntegrationResponse200>
-  > {
+  viewInvoicesInIntegration(): Promise<FetchResponse<200, types.ViewInvoicesInIntegrationResponse200>> {
     return this.core.fetch("/api/sell/view/integration", "get")
   }
 
@@ -770,7 +742,7 @@ class SDK {
 }
 
 const createSDK = (() => {
-  return new SDK()
+  return new TetrisSDK()
 })()
 
 export default createSDK

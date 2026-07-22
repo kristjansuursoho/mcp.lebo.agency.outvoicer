@@ -3,7 +3,7 @@ import fuzzysort from "fuzzysort"
 
 export const selectClientByIdentifier = (identifier: string | undefined, clients: GetClientResponse200[]) => {
   if (!identifier) {
-    const visibleClients = clients.slice(0, 3)
+    const visibleClients = clients.slice(0, 3).map(({ id, name }) => ({ id, name }))
     const moreClients = clients.length - visibleClients.length
 
     return {
@@ -44,7 +44,8 @@ export const selectClientByIdentifier = (identifier: string | undefined, clients
     }
   }
 
-  const visibleClients = matchingClients.map((result) => result.obj)
+  const visibleClients = matchingClients.map(({ obj: { id, name } }) => ({ id, name }))
+
   const moreClients = matchingClients.total - visibleClients.length
 
   return {
@@ -76,7 +77,7 @@ export const selectProductByIdentifier = (
   products: GetProductResponse200[]
 ) => {
   if (!identifier) {
-    const visibleProducts = products.slice(0, 3)
+    const visibleProducts = products.slice(0, 3).map(({ id, name }) => ({ id, name }))
     const moreProducts = products.length - visibleProducts.length
 
     return {
@@ -101,6 +102,7 @@ export const selectProductByIdentifier = (
     limit: 5,
     keys: ["name", "id"],
   })
+
   const [matchingProduct] = matchingProducts
 
   if (matchingProducts.total === 1 && matchingProduct) {
@@ -110,7 +112,7 @@ export const selectProductByIdentifier = (
     }
   }
 
-  const visibleProducts = matchingProducts.map((result) => result.obj)
+  const visibleProducts = matchingProducts.map(({ obj: { id, name } }) => ({ id, name }))
   const moreProducts = matchingProducts.total - visibleProducts.length
 
   return {

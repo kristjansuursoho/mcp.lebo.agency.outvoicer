@@ -3,8 +3,8 @@
   "apis": [
     {
       "identifier": "tetris",
-      "source": "./src/static/openapi.json",
-      "integrity": "sha512-0Vt1QDy7XrKvwSt4UWfti/BbCc72yz5TuHXd7xAyuviQ7U9mB2c1CWMqlSOfm3pBJ/bLKQD2Awdz86V+MyDgIA==",
+      "source": "../src/static/tetris-openapi.json",
+      "integrity": "sha512-n+a8r0+iDp0oKzhgaRGlXPbGNA1YieitoqdJiotNzzJnVLDCgp3dpKrY4Z+lSFDT0BD6titzhiZcJaBrjZe1cg==",
       "installerVersion": "6.1.3"
     }
   ]

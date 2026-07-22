@@ -1,9 +1,9 @@
-import { createInvoiceInputSchema, createInvoiceOutputSchema } from "@/domain/invoice.dto"
 import { propagateAttributes, startActiveObservation } from "@langfuse/tracing"
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp"
-import { mcpReqStorage } from "@/stores/mcp-request"
-import { TetrisSDK, type CreateInvoiceBodyParam } from "@api/tetris"
+import { createInvoiceInputSchema, createInvoiceOutputSchema } from "@/domain/invoice"
 import { CreateSimpleToolError, TOOL_ERROR } from "@/lib/tool-errors"
+import { TetrisSDK, type CreateInvoiceBodyParam } from "@api/tetris"
+import { mcpReqStorage } from "@/stores/mcp-request"
 
 export const CREATE_INVOICE_TOOL_NAME = "create-invoice"
 
@@ -32,7 +32,6 @@ export const registerCreateInvoiceTool = (server: McpServer) =>
     const attrs = {
       traceName: CREATE_INVOICE_TOOL_NAME,
       tags: ["invoice"],
-      domain: store.subdomain,
     }
 
     return propagateAttributes(attrs, () => {
@@ -40,8 +39,6 @@ export const registerCreateInvoiceTool = (server: McpServer) =>
         CREATE_INVOICE_TOOL_NAME,
         async (observation) => {
           try {
-            observation.update({ input })
-
             if (extra.signal.aborted) {
               throw new Error("Invoice creation was cancelled before delivery")
             }
@@ -54,10 +51,6 @@ export const registerCreateInvoiceTool = (server: McpServer) =>
             const preparedInvoice: CreateInvoiceBodyParam = input.invoice
             const { data: invoice } = await tetris.createInvoice(preparedInvoice)
 
-            if (extra.signal.aborted) {
-              throw new Error("Invoice creation was cancelled before delivery")
-            }
-
             observation.update({ output: { status: "created", invoice: { id: invoice.id } } })
 
             return {
@@ -67,7 +60,8 @@ export const registerCreateInvoiceTool = (server: McpServer) =>
                   text: `Invoice [${invoice.id}] draft was created but not sent. Review its rendered PDF before sending.`,
                 },
               ],
-              structuredContent: { status: "created" as const, invoice },
+              // TODO: Return full invoice data, or preview using markdown/ascii
+              structuredContent: { status: "created" as const, invoice: { id: invoice.id } },
             }
           } catch (error) {
             const message = error instanceof Error ? error.message : "Tool call failed"

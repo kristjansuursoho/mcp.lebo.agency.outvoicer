@@ -1,10 +1,10 @@
-import { mcpReqStorage } from "@/stores/mcp-request"
-import { TetrisSDK, type CreateInvoiceBodyParam } from "@api/tetris"
 import { propagateAttributes, startActiveObservation } from "@langfuse/tracing"
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp"
-import { prepareInvoiceInputSchema, prepareInvoiceOutputSchema } from "@/domain/invoice.dto"
-import { CreateSimpleToolError, TOOL_ERROR } from "@/lib/tool-errors"
 import { selectClientByIdentifier, selectProductByIdentifier } from "@/lib/tool-responses"
+import { prepareInvoiceInputSchema, prepareInvoiceOutputSchema } from "@/domain/invoice"
+import { CreateSimpleToolError, TOOL_ERROR } from "@/lib/tool-errors"
+import { TetrisSDK, type CreateInvoiceBodyParam } from "@api/tetris"
+import { mcpReqStorage } from "@/stores/mcp-request"
 
 export const PREPARE_INVOICE_TOOL_NAME = "prepare-invoice"
 
@@ -33,7 +33,6 @@ export const registerPrepareInvoiceTool = (server: McpServer) =>
     const attrs = {
       traceName: PREPARE_INVOICE_TOOL_NAME,
       tags: ["invoice"],
-      domain: store.subdomain,
     }
 
     return propagateAttributes(attrs, () => {
@@ -41,8 +40,6 @@ export const registerPrepareInvoiceTool = (server: McpServer) =>
         PREPARE_INVOICE_TOOL_NAME,
         async (observation) => {
           try {
-            observation.update({ input })
-
             const tetris = new TetrisSDK()
 
             tetris.server(`https://${store.subdomain}.outvoicer.com`)
@@ -133,7 +130,7 @@ export const registerPrepareInvoiceTool = (server: McpServer) =>
               lines: preparedLines,
             }
 
-            observation.update({ output: { status: "ready", clientId, clientName, invoice } })
+            observation.update({ output: { status: "ready", lineCount: invoice.lines.length } })
 
             return {
               content: [

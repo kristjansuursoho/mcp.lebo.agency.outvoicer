@@ -87,7 +87,7 @@ export const invoiceObjectSchema = z.record(z.string(), z.unknown())
 
 export const createInvoiceOutputSchema = z.object({
   status: z.literal("created"),
-  invoice: invoiceObjectSchema.optional(),
+  invoice: z.object({ id: z.string() }).strict(),
 })
 
 export const reviewInvoiceOutputSchema = z.object({
@@ -159,12 +159,12 @@ export const preparedInvoiceSchema = z
   })
   .strict()
 
-export const clientSchema = z.looseObject({
+export const clientSchema = z.object({
   id: z.string(),
   name: z.string(),
 })
 
-export const productSchema = z.looseObject({
+export const productSchema = z.object({
   id: z.string(),
   name: z.string(),
 })

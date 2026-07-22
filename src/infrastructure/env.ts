@@ -17,6 +17,7 @@ export const EnvSchema = z.object({
   MCP_ALLOWED_HOSTS: z.string().optional(),
   MCP_ALLOWED_ORIGINS: z.string().optional(),
   MCP_REVIEW_TTL_MS: positiveInteger.default(10 * 60_000),
+  MCP_MAX_SESSIONS: positiveInteger.default(100),
   MCP_SESSION_TTL_MS: positiveInteger.default(30 * 60_000),
   MCP_ELICITATION_TIMEOUT_MS: positiveInteger.default(2 * 60_000),
 
