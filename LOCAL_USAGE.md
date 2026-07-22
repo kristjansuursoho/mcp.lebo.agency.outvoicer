@@ -12,7 +12,7 @@ bun run start
 The server should print:
 
 ```text
-Outvoicer MCP listening on http://127.0.0.1:3000/mcp/{subdomain}
+Outvoicer MCP listening on http://127.0.0.1:3000/outvoicer/{subdomain}
 ```
 
 ## 2. Configure OpenCode
@@ -23,7 +23,7 @@ In another terminal, export the token:
 export OUTVOICER_TOKEN='your-token'
 ```
 
-Create `opencode.json` in this directory. Replace `your-subdomain` with the
+Create `opencode.json`. Replace `your-subdomain` with the
 company subdomain only, for example `acme` for `acme.outvoicer.com`.
 
 ```json
@@ -32,7 +32,7 @@ company subdomain only, for example `acme` for `acme.outvoicer.com`.
   "mcp": {
     "outvoicer": {
       "type": "remote",
-      "url": "http://127.0.0.1:3000/mcp/your-subdomain",
+      "url": "http://127.0.0.1:3000/outvoicer/your-subdomain",
       "enabled": true,
       "oauth": false,
       "headers": {
@@ -61,8 +61,3 @@ List the Outvoicer MCP tools available to you. Do not call them or create, revie
 ```
 
 OpenCode should report `create_invoice`, `review_invoice`, and `send_invoice`.
-
-
----
-
-ngrok http 3000
