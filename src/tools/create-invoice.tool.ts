@@ -2,6 +2,7 @@ import { propagateAttributes, startActiveObservation } from "@langfuse/tracing"
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp"
 import { createInvoiceInputSchema, createInvoiceOutputSchema } from "@/domain/invoice"
 import { CreateSimpleToolError, TOOL_ERROR } from "@/lib/tool-errors"
+import { AuthorizationToolError } from "@/lib/mcp-errors"
 import { TetrisSDK, type CreateInvoiceBodyParam } from "@api/tetris"
 import { mcpReqStorage } from "@/stores/mcp-request"
 
@@ -19,6 +20,9 @@ export const createInvoiceData = {
     idempotentHint: false,
     openWorldHint: true,
   },
+  _meta: {
+    securitySchemes: [{ type: "oauth2", scopes: ["invoice:create"] }],
+  },
 }
 
 export const registerCreateInvoiceTool = (server: McpServer) =>
@@ -27,6 +31,10 @@ export const registerCreateInvoiceTool = (server: McpServer) =>
 
     if (!store) {
       return CreateSimpleToolError(TOOL_ERROR.MISSING_CONTEXT)
+    }
+
+    if (!extra.authInfo?.scopes.includes("invoice:create")) {
+      return AuthorizationToolError(store.resourceMetadataUrl, "invoice:create")
     }
 
     const attrs = {
@@ -46,7 +54,7 @@ export const registerCreateInvoiceTool = (server: McpServer) =>
             const tetris = new TetrisSDK()
 
             tetris.server(`https://${store.subdomain}.outvoicer.com`)
-            tetris.auth(store.token)
+            tetris.auth(store.outvoicerToken)
 
             const preparedInvoice: CreateInvoiceBodyParam = input.invoice
             const { data: invoice } = await tetris.createInvoice(preparedInvoice)

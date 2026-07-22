@@ -1,19 +1,41 @@
 # Connect to Outvoicer MCP
 
-Public MCP deployments operated by lebo.agency use the separate OAuth authorization server at [oauth.lebo.agency](https://oauth.lebo.agency). OAuth termination and access to lebo.agency MCP servers are deployment concerns outside this repository.
-
-The instructions below are for direct or self-hosted connections to this application. They use an Outvoicer bearer token rather than the hosted OAuth flow.
-
-Outvoicer MCP is a remote [Streamable HTTP](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#streamable-http) server. Each connection needs:
-
-- The MCP server host.
-- The intended company's Outvoicer subdomain. For `https://acme.outvoicer.com`, use `acme`.
-- An Outvoicer bearer token with access to that subdomain.
-
-The endpoint is:
+The tenant-specific Streamable HTTP endpoint is:
 
 ```text
 https://mcp.lebo.agency/outvoicer/{subdomain}
 ```
 
-One token can access multiple companies, so the token does not replace `{subdomain}`. Manage the token at [app.outvoicer.com](https://app.outvoicer.com), and never commit it to a client configuration file.
+For `https://acme.outvoicer.com`, replace `{subdomain}` with `acme`. Add that URL as a custom MCP connector in ChatGPT developer mode. ChatGPT discovers `oauth.lebo.agency`, dynamically registers its callback, and starts the OAuth authorization-code flow automatically.
+
+Do not put an Outvoicer token in ChatGPT or any MCP client configuration. The Worker resolves it after OAuth authorization.
+
+## OAuth Service Contract
+
+`oauth.lebo.agency` must:
+
+- Publish authorization-server metadata and a JWKS matching `OAUTH_JWKS_URL`.
+- Support authorization code with PKCE `S256` and dynamic client registration.
+- Accept the exact tenant MCP URL as the OAuth `resource` and issue it as the JWT `aud`.
+- Issue signed JWT access tokens with `iss`, `sub`, `aud`, `exp`, and a space-delimited `scope` containing `invoice:read`, `invoice:create`, or both.
+- Authorize the exact `(issuer, subject, subdomain)` tuple at the credential endpoint.
+
+The configured `OAUTH_CREDENTIAL_URL` accepts this service-authenticated request:
+
+```http
+POST /api/outvoicer/credential
+Authorization: Bearer <OAUTH_SERVICE_TOKEN>
+Content-Type: application/json
+
+{"issuer":"https://oauth.lebo.agency","subject":"<oauth-sub>","subdomain":"acme"}
+```
+
+It returns `{"token":"<outvoicer-token>"}` only when that subject is connected to the requested tenant. It returns `403` or `404` otherwise. The endpoint must never return the credential to a browser or MCP client.
+
+Set the shared credential-service secret before deploying:
+
+```sh
+bunx wrangler secret put OAUTH_SERVICE_TOKEN
+```
+
+The JWKS and credential endpoint paths in `wrangler.jsonc` are deployment values. Change them there if `oauth.lebo.agency` exposes different paths.

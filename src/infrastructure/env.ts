@@ -17,9 +17,16 @@ export const EnvSchema = z.object({
   MCP_ALLOWED_HOSTS: z.string().optional(),
   MCP_ALLOWED_ORIGINS: z.string().optional(),
   MCP_REVIEW_TTL_MS: positiveInteger.default(10 * 60_000),
-  MCP_MAX_SESSIONS: positiveInteger.default(100),
-  MCP_SESSION_TTL_MS: positiveInteger.default(30 * 60_000),
   MCP_ELICITATION_TIMEOUT_MS: positiveInteger.default(2 * 60_000),
+
+  MCP_PUBLIC_ORIGIN: z.url().default("https://mcp.lebo.agency"),
+  OAUTH_ISSUER: z.url().default("https://oauth.lebo.agency"),
+  OAUTH_JWKS_URL: z.url(),
+  OAUTH_JWT_ALGORITHMS: z.string().default("RS256"),
+  OAUTH_CLOCK_TOLERANCE_SECONDS: z.coerce.number().int().nonnegative().default(5),
+  OAUTH_CREDENTIAL_URL: z.url(),
+  OAUTH_CREDENTIAL_TIMEOUT_MS: positiveInteger.default(5_000),
+  OAUTH_SERVICE_TOKEN: z.string().min(1),
 
   LANGFUSE_PUBLIC_KEY: z.string().optional(),
   LANGFUSE_SECRET_KEY: z.string().optional(),

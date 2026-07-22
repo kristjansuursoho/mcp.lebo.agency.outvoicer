@@ -3,6 +3,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp"
 import { selectClientByIdentifier, selectProductByIdentifier } from "@/lib/tool-responses"
 import { prepareInvoiceInputSchema, prepareInvoiceOutputSchema } from "@/domain/invoice"
 import { CreateSimpleToolError, TOOL_ERROR } from "@/lib/tool-errors"
+import { AuthorizationToolError } from "@/lib/mcp-errors"
 import { TetrisSDK, type CreateInvoiceBodyParam } from "@api/tetris"
 import { mcpReqStorage } from "@/stores/mcp-request"
 
@@ -20,6 +21,9 @@ export const prepareInvoiceData = {
     idempotentHint: true,
     openWorldHint: true,
   },
+  _meta: {
+    securitySchemes: [{ type: "oauth2", scopes: ["invoice:read"] }],
+  },
 }
 
 export const registerPrepareInvoiceTool = (server: McpServer) =>
@@ -28,6 +32,10 @@ export const registerPrepareInvoiceTool = (server: McpServer) =>
 
     if (!store) {
       return CreateSimpleToolError(TOOL_ERROR.MISSING_CONTEXT)
+    }
+
+    if (!extra.authInfo?.scopes.includes("invoice:read")) {
+      return AuthorizationToolError(store.resourceMetadataUrl, "invoice:read")
     }
 
     const attrs = {
@@ -43,7 +51,7 @@ export const registerPrepareInvoiceTool = (server: McpServer) =>
             const tetris = new TetrisSDK()
 
             tetris.server(`https://${store.subdomain}.outvoicer.com`)
-            tetris.auth(store.token)
+            tetris.auth(store.outvoicerToken)
 
             let clientId = input.clientId
             let clientName = input.clientId

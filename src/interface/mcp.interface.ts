@@ -1,146 +1,66 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js"
-import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js"
-import { createHash } from "node:crypto"
 import type { BlankEnv, BlankInput } from "hono/types"
 import type { Context } from "hono"
 
-import { removeExpiredSessions, sessions } from "@/lib/mcp-session"
+import {
+  CredentialResolutionError,
+  resolveOutvoicerToken,
+  resourceMetadataUrl,
+  supportedScopes,
+  verifyAccessToken,
+} from "@/infrastructure/oauth"
+import { InsufficientScopeResponse, UnauthorizedResponse } from "@/lib/mcp-errors"
 import { getReqBearerToken } from "@/helpers/get-req-bearer-token"
 import { SimpleJsonRpcRespponse } from "@/lib/mcp-responses"
-import { UnauthorizedResponse } from "@/lib/mcp-errors"
 import { mcpReqStorage } from "@/stores/mcp-request"
 import { createMcp } from "@/infrastructure/mcp"
 import { logger } from "@/infrastructure/logger"
-import { env } from "@/infrastructure/env"
-import { TetrisSDK } from "@api/tetris"
 
-// TODO: figure out why tf i need to use this hack
 export type ParsedBodyContext = Context<{ Variables: { parsedBody?: unknown } }, "/outvoicer/:subdomain", BlankInput>
 
 export const subdomainPattern = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
 
-// were using pending sessions until actual session is established
-let pendingSessions = 0
-
 export async function handleMcpRequest(c: Context<BlankEnv, "/outvoicer/:subdomain", BlankInput>) {
-  // TODO: figure out why tf i need to use this hack
   const parsedBody = (c as unknown as ParsedBodyContext).get("parsedBody")
-
   const subdomain = c.req.param("subdomain")
   if (!subdomainPattern.test(subdomain)) return c.json({ error: "Invalid Outvoicer subdomain" }, 400)
 
+  const metadataUrl = resourceMetadataUrl(subdomain)
   const token = getReqBearerToken(c.req.raw)
-  if (!token) return UnauthorizedResponse()
+  if (!token) return UnauthorizedResponse(metadataUrl)
 
-  removeExpiredSessions()
-
-  // TODO: is this only header key i should look for..
-  const sessionId = c.req.header("MCP-session-Id")
-  const fingerprint = createHash("sha256").update(token).digest("hex")
-
-  if (sessionId) {
-    const session = sessions.get(sessionId)
-
-    // TODO: fingerprint check is currently the easiest but also impressively secure
-    if (!session || session.subdomain !== subdomain || session.fingerprint !== fingerprint) {
-      return UnauthorizedResponse()
-    }
-
-    session.lastSeenAt = Date.now()
-
-    const response = await mcpReqStorage.run({ subdomain, token }, () => {
-      return session.transport.handleRequest(c.req.raw, {
-        parsedBody,
-        authInfo: {
-          token,
-          clientId: subdomain,
-          scopes: ["invoice:create", "invoice:review"],
-        },
-      })
-    })
-
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: new Headers(response.headers),
-    })
-  }
-
-  const body = parsedBody
-
-  if (!isInitializeRequest(body)) {
-    return SimpleJsonRpcRespponse(400, "Initialize the MCP session first")
-  }
-
-  // no session found, also not creating
-  if (c.req.method !== "POST") {
-    return SimpleJsonRpcRespponse(400, "mcp-session-id header is required")
-  }
-
-  const tetris = new TetrisSDK()
-  tetris.server(`https://${subdomain}.outvoicer.com`)
-  tetris.auth(token)
-
+  let authInfo
   try {
-    // we must test tetris token, so we can return error early
-    await tetris.testToken()
-  } catch (err) {
-    if (typeof err === "object" && err !== null && "status" in err && err.status === 401) {
-      return UnauthorizedResponse()
-    }
-
-    logger.warn({ err, subdomain }, "Outvoicer token validation failed")
-    return SimpleJsonRpcRespponse(503, "Outvoicer token validation is unavailable")
+    authInfo = await verifyAccessToken(token, subdomain)
+  } catch {
+    return UnauthorizedResponse(metadataUrl, "invalid_token")
   }
 
-  if (sessions.size + pendingSessions >= env.MCP_MAX_SESSIONS) {
-    return SimpleJsonRpcRespponse(503, "MCP session capacity reached")
+  if (!supportedScopes.some((scope) => authInfo.scopes.includes(scope))) {
+    return InsufficientScopeResponse(metadataUrl)
+  }
+
+  if (c.req.method !== "POST") {
+    return SimpleJsonRpcRespponse(405, "Stateless MCP only supports POST requests")
+  }
+
+  let outvoicerToken: string
+  try {
+    outvoicerToken = await resolveOutvoicerToken(authInfo, subdomain)
+  } catch (error) {
+    if (error instanceof CredentialResolutionError && error.status === 403) {
+      return c.json({ error: "No Outvoicer connection for this tenant" }, 403)
+    }
+
+    logger.warn({ subdomain }, "Outvoicer credential resolution failed")
+    return SimpleJsonRpcRespponse(503, "Outvoicer credential resolution is unavailable")
   }
 
   const mcp = createMcp(subdomain)
+  const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined })
+  await mcp.connect(transport)
 
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    sessionIdGenerator: () => crypto.randomUUID(),
-    onsessioninitialized: (initializedSessionId) => {
-      sessions.set(initializedSessionId, {
-        subdomain,
-        fingerprint,
-        transport,
-        mcp,
-        lastSeenAt: Date.now(),
-      })
-    },
-    onsessionclosed: (closedSessionId) => {
-      if (closedSessionId) sessions.delete(closedSessionId)
-    },
-  })
-
-  pendingSessions += 1
-
-  try {
-    await mcp.connect(transport)
-
-    const response = await mcpReqStorage.run({ subdomain, token }, () => {
-      return transport.handleRequest(c.req.raw, {
-        parsedBody: body,
-        authInfo: {
-          token,
-          clientId: subdomain,
-          scopes: ["invoice:create", "invoice:review"],
-        },
-      })
-    })
-
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: new Headers(response.headers),
-    })
-  } finally {
-    pendingSessions -= 1
-
-    if (!transport.sessionId) {
-      await mcp.close().catch((err) => logger.warn({ err }, "Failed to close uninitialized session"))
-    }
-  }
+  return mcpReqStorage.run({ subdomain, outvoicerToken, resourceMetadataUrl: metadataUrl }, () =>
+    transport.handleRequest(c.req.raw, { parsedBody, authInfo })
+  )
 }

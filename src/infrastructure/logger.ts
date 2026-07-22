@@ -14,4 +14,21 @@ if (env.NODE_ENV !== "production") {
   }
 }
 
-export const logger = pino({ level: env.LOG_LEVEL, transport })
+export const logger = pino({
+  level: env.LOG_LEVEL,
+  transport,
+  redact: {
+    paths: [
+      "authorization",
+      "headers.authorization",
+      "req.headers.authorization",
+      "cookie",
+      "headers.cookie",
+      "req.headers.cookie",
+      "token",
+      "*.token",
+      "OAUTH_SERVICE_TOKEN",
+    ],
+    censor: "[REDACTED]",
+  },
+})
