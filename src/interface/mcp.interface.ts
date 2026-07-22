@@ -1,5 +1,6 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js"
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js"
+import { createHash } from "node:crypto"
 import type { BlankEnv, BlankInput } from "hono/types"
 import type { Context } from "hono"
 
@@ -35,7 +36,7 @@ export async function handleMcpRequest(c: Context<BlankEnv, "/outvoicer/:subdoma
 
   // TODO: is this only header key i should look for..
   const sessionId = c.req.header("MCP-session-Id")
-  const fingerprint = new Bun.CryptoHasher("sha256").update(token).digest("hex")
+  const fingerprint = createHash("sha256").update(token).digest("hex")
 
   if (sessionId) {
     const session = sessions.get(sessionId)

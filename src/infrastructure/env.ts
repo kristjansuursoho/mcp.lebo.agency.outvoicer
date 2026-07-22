@@ -27,4 +27,4 @@ export const EnvSchema = z.object({
   LANGFUSE_TRACING_ENVIRONMENT: z.string().optional(),
 })
 
-export const env = EnvSchema.parse(Bun.env)
+export const env = EnvSchema.parse(process.env)
