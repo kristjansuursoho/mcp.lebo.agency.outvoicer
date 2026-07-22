@@ -34,7 +34,7 @@ export const registerCreateInvoiceTool = (server: McpServer) =>
     }
 
     if (!extra.authInfo?.scopes.includes("invoice:create")) {
-      return AuthorizationToolError(store.resourceMetadataUrl, "invoice:create")
+      return AuthorizationToolError("invoice:create")
     }
 
     const attrs = {

@@ -19,7 +19,8 @@ export const EnvSchema = z.object({
   MCP_REVIEW_TTL_MS: positiveInteger.default(10 * 60_000),
   MCP_ELICITATION_TIMEOUT_MS: positiveInteger.default(2 * 60_000),
 
-  MCP_PUBLIC_ORIGIN: z.url().default("https://mcp.lebo.agency"),
+  MCP_RESOURCE: z.url().default("https://mcp.lebo.agency/outvoicer"),
+  RESOURCE_METADATA: z.url().default("https://mcp.lebo.agency/.well-known/oauth-protected-resource/outvoicer"),
   OAUTH_ISSUER: z.url().default("https://oauth.lebo.agency"),
   OAUTH_JWKS_URL: z.url(),
   OAUTH_JWT_ALGORITHMS: z.string().default("RS256"),

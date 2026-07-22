@@ -1,5 +1,7 @@
-export const UnauthorizedResponse = (resourceMetadataUrl: string, error?: "invalid_token") => {
-  const challenge = [`Bearer resource_metadata="${resourceMetadataUrl}"`, error && `error="${error}"`]
+import { env } from "@/infrastructure/env"
+
+export const UnauthorizedResponse = (error?: "invalid_token") => {
+  const challenge = [`Bearer resource_metadata="${env.RESOURCE_METADATA}"`, error && `error="${error}"`]
     .filter(Boolean)
     .join(", ")
 
@@ -9,19 +11,19 @@ export const UnauthorizedResponse = (resourceMetadataUrl: string, error?: "inval
   )
 }
 
-export const InsufficientScopeResponse = (resourceMetadataUrl: string) => {
+export const InsufficientScopeResponse = () => {
   const scope = "invoice:read invoice:create"
   const challenge =
-    `Bearer resource_metadata="${resourceMetadataUrl}", ` + `error="insufficient_scope", scope="${scope}"`
+    `Bearer resource_metadata="${env.RESOURCE_METADATA}", ` + `error="insufficient_scope", scope="${scope}"`
 
   return Response.json({ error: "insufficient_scope" }, { status: 403, headers: { "WWW-Authenticate": challenge } })
 }
 
-export const AuthorizationToolError = (resourceMetadataUrl: string, scope: string) => ({
+export const AuthorizationToolError = (scope: string) => ({
   isError: true,
   content: [{ type: "text" as const, text: `OAuth scope ${scope} is required.` }],
   _meta: {
     "mcp/www_authenticate":
-      `Bearer resource_metadata="${resourceMetadataUrl}", ` + `error="insufficient_scope", scope="${scope}"`,
+      `Bearer resource_metadata="${env.RESOURCE_METADATA}", ` + `error="insufficient_scope", scope="${scope}"`,
   },
 })

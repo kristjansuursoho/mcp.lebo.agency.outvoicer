@@ -35,7 +35,7 @@ export const registerPrepareInvoiceTool = (server: McpServer) =>
     }
 
     if (!extra.authInfo?.scopes.includes("invoice:read")) {
-      return AuthorizationToolError(store.resourceMetadataUrl, "invoice:read")
+      return AuthorizationToolError("invoice:read")
     }
 
     const attrs = {

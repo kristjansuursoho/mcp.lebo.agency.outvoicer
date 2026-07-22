@@ -7,18 +7,11 @@
   "observability": { "enabled": true },
   "workers_dev": false,
   "preview_urls": false,
-  "routes": [
-    { "pattern": "mcp.lebo.agency/outvoicer/*", "zone_name": "lebo.agency" },
-    {
-      "pattern": "mcp.lebo.agency/.well-known/oauth-protected-resource/outvoicer/*",
-      "zone_name": "lebo.agency",
-    },
-  ],
+  "routes": [{ "pattern": "mcp.lebo.agency", "custom_domain": true }],
   "vars": {
     "NODE_ENV": "production",
     "MCP_ALLOWED_HOSTS": "mcp.lebo.agency",
-    "MCP_ALLOWED_ORIGINS": "chatgpt.com",
-    "MCP_PUBLIC_ORIGIN": "https://mcp.lebo.agency",
+    "MCP_ALLOWED_ORIGINS": "chatgpt.com,claude.ai",
     "OAUTH_ISSUER": "https://oauth.lebo.agency",
     "OAUTH_JWKS_URL": "https://oauth.lebo.agency/.well-known/jwks.json",
     "OAUTH_CREDENTIAL_URL": "https://oauth.lebo.agency/api/outvoicer/credential",

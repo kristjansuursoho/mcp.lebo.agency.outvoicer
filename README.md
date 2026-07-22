@@ -24,18 +24,18 @@ Currently, it does not manage Outvoicer account data, integrations, or settings.
 
 Public lebo.agency endpoints use OAuth through [oauth.lebo.agency](https://oauth.lebo.agency).
 
-The server validates signed OAuth access tokens for the exact tenant selected by the URL, then resolves the user's Outvoicer credential server-side.
+The server validates signed OAuth access tokens, then resolves the user's selected Outvoicer connection server-side.
 
-- Tenant-specific protected resource discovery uses RFC 9728 metadata.
+- Protected resource discovery uses RFC 9728 metadata.
 - Authorization uses the OAuth authorization code flow with PKCE `S256` and dynamic client registration.
-- OAuth resource indicators bind authorization, access tokens, and JWT audiences to the exact Outvoicer tenant URL.
+- OAuth resource indicators bind authorization, access tokens, and JWT audiences to the Outvoicer MCP URL.
 - JWT access tokens are verified against the authorization server's JWKS with exact issuer, audience, expiry, and scope checks.
 - Tools advertise and enforce `invoice:read` and `invoice:create` independently.
 
 ## Security
 
 - Public access is protected by OAuth.
-- OAuth audiences and Outvoicer credentials are tenant-specific.
+- OAuth access is limited to the Outvoicer MCP resource and the user's stored connection.
 - Requests are stateless and access tokens are validated on every request.
 - OAuth access tokens are never forwarded to Outvoicer.
 - Responses and telemetry exclude sensitive data.
