@@ -1,12 +1,14 @@
 # Outvoicer MCP
 
-An unofficial MCP server for preparing and creating unsent invoice drafts through [Outvoicer](https://outvoicer.com).
+An unofficial MCP server for preparing and creating invoice drafts in [Outvoicer](https://outvoicer.com).
 
 ## Purpose
 
-This project was created in collaboration with [Martin Sookael](https://github.com/martinsookael), founder of [Outvoicer](https://outvoicer.com). It started from a desire to create and send invoices through simple conversations.
+I already use MCP servers, so connecting Outvoicer was a natural next step. Its [public API](https://api.outvoicer.com) makes it possible to prepare, create, and send invoices through conversation.
 
-My personal choice is [OpenCode](https://opencode.ai), but the MCP server is intended to work with other compatible clients, including ChatGPT and Claude.
+This project was created in collaboration with [Martin Sookael](https://github.com/martinsookael), founder of [Outvoicer](https://outvoicer.com).
+
+I use [OpenCode](https://opencode.ai), but the server also works with compatible clients such as ChatGPT and Claude.
 
 ## Scope
 
@@ -14,29 +16,22 @@ The current focus is limited to:
 
 - Creating invoices
 - Previewing invoices
+- Sending invoices
 
-Currently, this MCP server is not intended for managing Outvoicer account data, integrations, or settings. Integrations and other configuration can be set up or changed at [outvoicer.com](https://outvoicer.com).
+Currently, it does not manage Outvoicer account data, integrations, or settings. These can be managed at [outvoicer.com](https://outvoicer.com).
 
 ## Authentication
 
-Public MCP deployments operated by lebo.agency use the separate OAuth authorization server at [oauth.lebo.agency](https://oauth.lebo.agency). That service grants clients access to lebo.agency MCP servers; OAuth is not implemented in this repository.
+Public lebo.agency endpoints use OAuth through [oauth.lebo.agency](https://oauth.lebo.agency).
 
-At this application's boundary, requests carry an Outvoicer bearer credential. The server validates it against the exact tenant selected by the URL before creating an MCP session. Direct and self-hosted setup is documented in [docs/SETUP.md](docs/SETUP.md).
+The server validates Outvoicer credentials against the tenant selected by the URL before starting a session.
 
 ## Security
 
-- Only `prepare-invoice` and unsent-draft `create-invoice` tools are exposed. Sending and accounting forwarding are not registered.
-- Initialization validates the bearer credential with the selected tenant before allocating a session.
-- Authorization accepts only a strict `Bearer` header, and tenant subdomains must be lowercase DNS labels.
-- Sessions are bound to the tenant and a token fingerprint, limited by `MCP_MAX_SESSIONS`, and expired after `MCP_SESSION_TTL_MS`.
-- Bun rejects bodies larger than `MAX_REQ_BODY_SIZE` before JSON parsing. The default is 1 MiB.
-- MCP responses expose only client/product IDs and names or the created invoice ID, not complete financial and customer records.
-- Langfuse observations contain operational status only, not invoice payloads, customer identifiers, prices, comments, bearer tokens, or tenant names.
-- Each upstream operation uses an isolated SDK instance so mutable authentication and tenant state cannot cross requests.
-- A successful draft creation is reported as successful even if cancellation arrives after the upstream API call, preventing retry-driven duplicates.
-- Published OpenAPI examples use fictional company, registration, email, address, and non-routable bank values.
-- The vulnerable transitive `underscore` version is overridden to `1.13.8`.
-- Production deployments must terminate TLS, rate-limit session initialization at the edge, configure `MCP_ALLOWED_HOSTS` and `MCP_ALLOWED_ORIGINS`, keep session-affine routing, and keep OAuth and Outvoicer credentials out of logs and source control.
+- Public access is protected by OAuth.
+- Credentials are tenant-specific and isolated between requests.
+- Sessions are limited and automatically expire.
+- Responses and telemetry exclude sensitive data.
 
 ## About
 
