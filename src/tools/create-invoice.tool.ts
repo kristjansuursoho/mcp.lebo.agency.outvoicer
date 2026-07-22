@@ -1,7 +1,8 @@
 import { propagateAttributes, startActiveObservation } from "@langfuse/tracing"
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp"
 import { createInvoiceInputSchema, createInvoiceOutputSchema } from "@/domain/invoice"
-import { CreateSimpleToolError, TOOL_ERROR } from "@/lib/tool-errors"
+import { CreateSimpleTextToolError, CreateSimpleToolError, TOOL_ERROR } from "@/lib/tool-errors"
+import { CreatedInvoiceToolResponse } from "@/lib/tool-responses"
 import { AuthorizationToolError } from "@/lib/mcp-errors"
 import { TetrisSDK, type CreateInvoiceBodyParam } from "@api/tetris"
 import { mcpReqStorage } from "@/stores/mcp-request"
@@ -61,16 +62,7 @@ export const registerCreateInvoiceTool = (server: McpServer) =>
 
             observation.update({ output: { status: "created", invoice: { id: invoice.id } } })
 
-            return {
-              content: [
-                {
-                  type: "text" as const,
-                  text: `Invoice [${invoice.id}] draft was created but not sent. Review its rendered PDF before sending.`,
-                },
-              ],
-              // TODO: Return full invoice data, or preview using markdown/ascii
-              structuredContent: { status: "created" as const, invoice: { id: invoice.id } },
-            }
+            return CreatedInvoiceToolResponse(invoice.id)
           } catch (error) {
             const message = error instanceof Error ? error.message : "Tool call failed"
 
@@ -80,10 +72,7 @@ export const registerCreateInvoiceTool = (server: McpServer) =>
               statusMessage: message,
             })
 
-            return {
-              isError: true,
-              content: [{ type: "text" as const, text: message }],
-            }
+            return CreateSimpleTextToolError(message)
           }
         },
         { asType: "tool" }

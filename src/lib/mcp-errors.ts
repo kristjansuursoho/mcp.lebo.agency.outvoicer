@@ -19,6 +19,9 @@ export const InsufficientScopeResponse = () => {
   return Response.json({ error: "insufficient_scope" }, { status: 403, headers: { "WWW-Authenticate": challenge } })
 }
 
+export const OutvoicerConnectionErrorResponse = () =>
+  Response.json({ error: "No Outvoicer connection for this account" }, { status: 403 })
+
 export const AuthorizationToolError = (scope: string) => ({
   isError: true,
   content: [{ type: "text" as const, text: `OAuth scope ${scope} is required.` }],

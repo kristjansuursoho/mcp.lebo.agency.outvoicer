@@ -1,5 +1,49 @@
-import type { GetClientResponse200, GetProductResponse200 } from "@api/tetris"
+import type { CreateInvoiceBodyParam, GetClientResponse200, GetProductResponse200 } from "@api/tetris"
 import fuzzysort from "fuzzysort"
+
+export const CreatedInvoiceToolResponse = (invoiceId: string) => ({
+  content: [
+    {
+      type: "text" as const,
+      text: `Invoice [${invoiceId}] draft was created but not sent. Review its rendered PDF before sending.`,
+    },
+  ],
+  structuredContent: { status: "created" as const, invoice: { id: invoiceId } },
+})
+
+export const MissingAmountToolResponse = (
+  clientId: string,
+  clientName: string,
+  lineIndex: number,
+  productId: string
+) => ({
+  content: [
+    {
+      type: "text" as const,
+      text: `What quantity of product ${productId} should be invoiced on line ${lineIndex + 1}?`,
+    },
+  ],
+  structuredContent: {
+    status: "missing_amount" as const,
+    clientId,
+    clientName,
+    context: { lineIndex, productId },
+  },
+})
+
+export const PreparedInvoiceToolResponse = (
+  clientId: string,
+  clientName: string,
+  invoice: CreateInvoiceBodyParam
+) => ({
+  content: [
+    {
+      type: "text" as const,
+      text: `Invoice draft for ${clientName} (${clientId}) is ready to create.`,
+    },
+  ],
+  structuredContent: { status: "ready" as const, clientId, clientName, invoice },
+})
 
 export const selectClientByIdentifier = (identifier: string | undefined, clients: GetClientResponse200[]) => {
   if (!identifier) {

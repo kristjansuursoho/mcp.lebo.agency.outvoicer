@@ -8,7 +8,11 @@ import {
   supportedScopes,
   verifyAccessToken,
 } from "@/infrastructure/oauth"
-import { InsufficientScopeResponse, UnauthorizedResponse } from "@/lib/mcp-errors"
+import {
+  InsufficientScopeResponse,
+  OutvoicerConnectionErrorResponse,
+  UnauthorizedResponse,
+} from "@/lib/mcp-errors"
 import { getReqBearerToken } from "@/helpers/get-req-bearer-token"
 import { SimpleJsonRpcRespponse } from "@/lib/mcp-responses"
 import { mcpReqStorage } from "@/stores/mcp-request"
@@ -42,7 +46,7 @@ export async function handleMcpRequest(c: Context<BlankEnv, "/outvoicer", BlankI
     connection = await resolveOutvoicerConnection(authInfo)
   } catch (error) {
     if (error instanceof CredentialResolutionError && error.status === 403) {
-      return c.json({ error: "No Outvoicer connection for this account" }, 403)
+      return OutvoicerConnectionErrorResponse()
     }
 
     logger.warn("Outvoicer credential resolution failed")

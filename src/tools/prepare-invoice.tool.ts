@@ -1,8 +1,13 @@
 import { propagateAttributes, startActiveObservation } from "@langfuse/tracing"
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp"
-import { selectClientByIdentifier, selectProductByIdentifier } from "@/lib/tool-responses"
+import {
+  MissingAmountToolResponse,
+  PreparedInvoiceToolResponse,
+  selectClientByIdentifier,
+  selectProductByIdentifier,
+} from "@/lib/tool-responses"
 import { prepareInvoiceInputSchema, prepareInvoiceOutputSchema } from "@/domain/invoice"
-import { CreateSimpleToolError, TOOL_ERROR } from "@/lib/tool-errors"
+import { CreateSimpleTextToolError, CreateSimpleToolError, TOOL_ERROR } from "@/lib/tool-errors"
 import { AuthorizationToolError } from "@/lib/mcp-errors"
 import { TetrisSDK, type CreateInvoiceBodyParam } from "@api/tetris"
 import { mcpReqStorage } from "@/stores/mcp-request"
@@ -100,20 +105,7 @@ export const registerPrepareInvoiceTool = (server: McpServer) =>
               }
 
               if (line.amount === undefined) {
-                return {
-                  content: [
-                    {
-                      type: "text" as const,
-                      text: `What quantity of product ${productId} should be invoiced on line ${lineIndex + 1}?`,
-                    },
-                  ],
-                  structuredContent: {
-                    status: "missing_amount" as const,
-                    clientId,
-                    clientName,
-                    context: { lineIndex, productId },
-                  },
-                }
+                return MissingAmountToolResponse(clientId, clientName, lineIndex, productId)
               }
 
               const preparedLine: CreateInvoiceBodyParam["lines"][number] = {
@@ -140,15 +132,7 @@ export const registerPrepareInvoiceTool = (server: McpServer) =>
 
             observation.update({ output: { status: "ready", lineCount: invoice.lines.length } })
 
-            return {
-              content: [
-                {
-                  type: "text" as const,
-                  text: `Invoice draft for ${clientName} (${clientId}) is ready to create.`,
-                },
-              ],
-              structuredContent: { status: "ready" as const, clientId, clientName, invoice },
-            }
+            return PreparedInvoiceToolResponse(clientId, clientName, invoice)
           } catch (error) {
             const message = error instanceof Error ? error.message : "Tool call failed"
 
@@ -158,10 +142,7 @@ export const registerPrepareInvoiceTool = (server: McpServer) =>
               statusMessage: message,
             })
 
-            return {
-              isError: true,
-              content: [{ type: "text" as const, text: message }],
-            }
+            return CreateSimpleTextToolError(message)
           }
         },
         { asType: "tool" }
