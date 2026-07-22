@@ -1,11 +1,11 @@
 {
   "version": 1,
   "skills": {
-    "langfuse": {
-      "source": "langfuse/skills",
+    "cybersecurity-analyst": {
+      "source": "rysweet/amplihack",
       "sourceType": "github",
-      "skillPath": "skills/langfuse/SKILL.md",
-      "computedHash": "38cb23bf337eff2ccdbf54c09391ef96ed4cda42b97474ecd17abca820065121"
+      "skillPath": "skills/cybersecurity-analyst/SKILL.md",
+      "computedHash": "4f804565a002629ad80e311b460d710783af11bfddda5ddecee18c4b8f54cc0e"
     }
   }
 }
