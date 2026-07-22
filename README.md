@@ -33,6 +33,14 @@ The server validates Outvoicer credentials against the tenant selected by the UR
 - Sessions are limited and automatically expire.
 - Responses and telemetry exclude sensitive data.
 
+## Technology
+
+- [TypeScript](https://www.typescriptlang.org/) provides static typing, while [Bun](https://bun.sh/) runs the application and manages packages.
+- [Cloudflare Workers](https://developers.cloudflare.com/workers/) hosts the server.
+- [Hono](https://hono.dev/) handles HTTP requests, and the [Model Context Protocol SDK](https://modelcontextprotocol.io/) provides MCP support.
+- [Zod](https://zod.dev/) validates data.
+- [Langfuse](https://langfuse.com/) and [OpenTelemetry](https://opentelemetry.io/) provide tracing and observability.
+
 ## About
 
 This project is maintained by [Kristjan Suursoho](https://github.com/kristjansuursoho), who works with Outvoicer as a freelancer. It is an unofficial project and is not maintained or published by Outvoicer.
